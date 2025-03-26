@@ -28,7 +28,7 @@ shinyServer(function(input, output, session) {
   refreshFiles <<- 0
   
   volumes <- shinyFiles::getVolumes()()
-  program_slozka <- dirname(rstudioapi::getActiveDocumentContext()$path)
+  program_slozka <- getwd()
   volumes <- c("Program Directory" = dirname(program_slozka), volumes)
   names(volumes) <- gsub(".*\\((.*)\\).*", "\\1", names(volumes))
 
