@@ -1,10 +1,13 @@
+#verze 1.4.25
 library(shiny)
 library(shinyFiles)
 library(readxl)
 library(fs)
 library(shinyjs)
+library(future.apply)
 library(dplyr)
-#ahoj
+plan(multisession)
+
 
 shinyServer(function(input, output, session) {
   
@@ -1109,7 +1112,7 @@ shinyServer(function(input, output, session) {
           spiro$t <- spiro$t - min(spiro$t)
           time_intervals <- diff(spiro$t)
           median_interval <- as.numeric(median(time_intervals))
-          closest_rows <- round(5 / median_interval)
+          closest_rows <- max(1, round(5 / median_interval))
           spiro$VT_5s <- zoo::rollmean(spiro$VT, k = closest_rows, align = "right", fill = NA)
         }
         
@@ -1124,7 +1127,7 @@ shinyServer(function(input, output, session) {
         FEV1 <-  as.numeric(gsub("L", "", gsub(",", ".", spiro_info[[3]][which(spiro_info[[1]] == "FEV1")][1])))
         s.pomer <- round(FEV1/FVC*100,1)
         VO2max <- round(max(spiro$`V'O2`), 1)
-        VO2_kg <- as.numeric(spiro_info[which(spiro_info[,1] == "V'O2/kg"), 12])
+        VO2_kg <- as.numeric(gsub(",", ".", spiro_info[which(spiro_info[,1] == "V'O2/kg"), 12]))
         vykon <- as.numeric(round(max(spiro$WR),0))
         vykon_kg <- as.numeric(vykon/vaha)
         hrmax <- round(max(spiro$TF),0)
@@ -2091,6 +2094,33 @@ shinyServer(function(input, output, session) {
       
       if(!is.null(df4_a())) {
         df4 <- df4_a()
+      } else {
+        df4 <- data.frame(
+          `Date meas.` = character(),
+          Name = character(),
+          Weight = numeric(),
+          Fat = numeric(),
+          `VO2max (l)` = numeric(),
+          `VO2max (ml/kg/min)` = numeric(),
+          `Výkon (W)` = numeric(),
+          `Rychlost (km/h)` = numeric(),
+          `Výkon (l/kg)` = numeric(),
+          `HRmax (BPM)` = numeric(),
+          `ANP (BPM)` = numeric(),
+          `Tep. kyslík (ml)` = numeric(),
+          `VT (l)` = numeric(),
+          RER = numeric(),
+          `LaMax (mmol/l)` = numeric(),
+          `FEV1 (l)` = numeric(),
+          `FVC (l)` = numeric(),
+          `Aerobní Z. do` = numeric(),
+          `Smíšená Z. od` = numeric(),
+          `Smíšená Z. do` = numeric(),
+          `Anaerobní Z. od` = numeric(),
+          stringsAsFactors = FALSE,
+          check.names = FALSE)
+          df4 <- df4[nrow(df4) + 1,]
+        
       }
       
       wd <-  dirname(as.character(antropometrie_path))
@@ -2160,6 +2190,7 @@ shinyServer(function(input, output, session) {
                                NA))
         }
         if (length(file.list.spiro) != 0) {
+          spiro <- readxl::read_excel("C:/Users/DKolinger/Desktop/stastny/spiro/Kveta_Cernohlavkova.xlsx")
           spiro <- readxl::read_excel(paste(spiro.path, "/", file.list.spiro[i], sep=""))
           spiro <- spiro[rowSums(!is.na(spiro)) > 0,]
           rows_with_bf <- which(spiro[[1]] == "BF")
@@ -2175,7 +2206,7 @@ shinyServer(function(input, output, session) {
           spiro$t <- spiro$t - min(spiro$t)
           time_intervals <- diff(spiro$t)
           median_interval <- as.numeric(median(time_intervals))
-          closest_rows <- round(5 / median_interval)
+          closest_rows <- max(1, round(5 / median_interval))
           spiro$VT_5s <- zoo::rollmean(spiro$VT, k = closest_rows, align = "right", fill = NA)
           
         }
@@ -2191,7 +2222,7 @@ shinyServer(function(input, output, session) {
         FEV1 <- as.numeric(gsub("L", "", gsub(",", ".", spiro_info[[3]][which(spiro_info[[1]] == "FEV1")][1])))
         s.pomer <- round(FEV1/FVC*100,1)
         VO2max <- round(max(spiro$`V'O2`), 1)
-        VO2_kg <- as.numeric(spiro_info[which(spiro_info[,1] == "V'O2/kg"), 12])
+        VO2_kg <- VO2_kg <- as.numeric(gsub(",", ".", spiro_info[which(spiro_info[,1] == "V'O2/kg"), 12]))
         vykon <- round(as.numeric(max(spiro$WR)),0)
         vykon_kg <- as.numeric(vykon/vaha)
         hrmax <- round(max(spiro$TF),0)
@@ -2280,12 +2311,10 @@ shinyServer(function(input, output, session) {
         ve_range <- max(spiro$TF)
         min(spiro$TF)
         
-        #### spiro historie ####
         if (!exists("df4")) {
           df4 <- data.frame()
           df4 <- df4[nrow(df4) + 1,]
-        }
-        
+        } 
         
         df4$`Date meas.` <- append(na.omit(df4$`Date meas.`), datum_mer)
         df4$Name <- append(na.omit(df4$Name), fullname)
@@ -2523,25 +2552,20 @@ shinyServer(function(input, output, session) {
     
     if (input$spirometrie && !input$wingate && !is.null(antropometrie_path)) {
       print("spiro")
-      withProgress(message = 'Calculation in progress', {
-        N <- length(file.list.spiro) 
     process_and_generate_spiro(antropometrie_path, spirometrie_path, N, incProgress, units_switch)
-      })
+      }
 
-    } else if (input$spirometrie && input$wingate && length(spiro_ids) > 0) {
+     else if (input$spirometrie && input$wingate && length(spiro_ids) > 0) {
       print("oboje")
-      withProgress(message = 'Calculation in progress', {
         spiro_ids <- paste0(spiro_ids, ".xlsx")
         file.list.spiro.2 <- file.list.spiro[file.list.spiro %in% spiro_ids]
         all_files <- c(file.list.spiro.2, file.list)
         all_files <- tools::file_path_sans_ext(all_files)
-        N <- length(unique(all_files))
       process_and_generate_pdfs(wingate_path, antropometrie_path,spirometrie_path, N, incProgress)
       
       file.list.spiro<- file.list.spiro[file.list.spiro %in% spiro_ids]
       
       process_and_generate_spiro(antropometrie_path, spirometrie_path, N, incProgress, units_switch)
-      })
     } else {
       print("wingate")
       withProgress(message = 'Calculation in progress', {
