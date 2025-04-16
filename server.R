@@ -1966,8 +1966,10 @@ shinyServer(function(input, output, session) {
         
       }
       if (!is.na(sj) | dotaz_spiro == "YES") {
+        Sys.setenv(RSTUDIO_PANDOC = "C:/Program Files/RStudio/resources/app/bin/quarto/bin/tools")
         rmarkdown::render(paste(program_slozka, "/export_NEOTVIRAT.Rmd", sep = ""), params = list(dotaz_spiro = dotaz_spiro), output_file = paste(id, ".pdf", sep= ""), clean = T, quiet = F)
       } else {
+        Sys.setenv(RSTUDIO_PANDOC = "C:/Program Files/RStudio/resources/app/bin/quarto/bin/tools")
         rmarkdown::render(paste(program_slozka, "/export_NEOTVIRAT_wingate.Rmd", sep = ""), params = list(dotaz_spiro = dotaz_spiro), output_file = paste(id, ".pdf", sep= ""), clean = T, quiet = F)
       }
       
@@ -2532,7 +2534,7 @@ shinyServer(function(input, output, session) {
         png(paste0(program_slozka, "/p2.png"), width = 1500, height = 600)
         plot(combined_plot)
         dev.off()
-        
+        Sys.setenv(RSTUDIO_PANDOC = "C:/Program Files/RStudio/resources/app/bin/quarto/bin/tools")
         rmarkdown::render(paste(program_slozka, "/export_spiro_NEOTVIRAT.Rmd", sep = ""), output_file = paste(id, ".pdf", sep= ""), clean = T, quiet = F)
         
         fs::file_move(path = paste(program_slozka, "/", id, ".pdf", sep = ""), new_path = paste(wd, "/reporty/", id, ".pdf", sep = ""))
