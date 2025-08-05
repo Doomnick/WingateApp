@@ -6,8 +6,6 @@ library(fs)
 library(shinyjs)
 library(future.apply)
 library(dplyr)
-plan(multisession)
-
 
 
 shinyServer(function(input, output, session) {
