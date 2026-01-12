@@ -3,30 +3,21 @@ library(shinyFiles)
 
 shinyUI(fluidPage(
   useShinyjs(),
-  tags$head(
-    tags$title("Performance Analysis"),
-    tags$style(HTML("
-      .shiny-directory-button { margin-bottom: 5px !important; }
-      .section-box {
-        border: 1px solid #ddd;
-        padding: 10px;
-        margin-bottom: 15px;
-        border-radius: 5px;
-        background-color: #f9f9f9;
-      }
-      .action-btn {
-        margin-right: 5px;
-        margin-bottom: 5px;
-      }
-    "))
-  ),
-  
-  # Logo a nadpis vedle sebe s marginem nahoře
-  div(
-    style = "display: flex; align-items: center; margin: 10px 0 10px 0;",
-    tags$img(src = "logo.png", height = "60px", style = "margin-right: 15px;"),
-    h1("Performance Analysis", style = "margin: 0;")
-  ),
+  tags$head(tags$style(HTML("
+    .shiny-directory-button { margin-bottom: 5px !important; }
+    .section-box {
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+    }
+    .action-btn {
+      margin-right: 5px;
+      margin-bottom: 5px;
+    }
+  "))),
+  titlePanel("Performance Analysis"),
   sidebarLayout(
     sidebarPanel(
       style = "padding-top: 10px;",

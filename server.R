@@ -92,8 +92,8 @@ shinyServer(function(input, output, session) {
       updateCheckboxInput(session, "srovnani2", value = !is.null(autoPaths$srovnani2))
     }
   })
-
-
+  
+  
   # Detect subfolders after main folder selection
   observeEvent(input$antropometrie, {
     path <- parseDirPath(volumes, input$antropometrie)
@@ -119,14 +119,14 @@ shinyServer(function(input, output, session) {
     path <- parseDirPath(volumes, input$spirometrie_path)
     if (length(path) > 0 && dir.exists(path)) autoPaths$spiro <- path
   })
-
+  
   # Reactive paths
   antropometrie_path <- reactive({ autoPaths$antropometrie })
   wingate_path <- reactive({ autoPaths$wingate })
   spirometrie_path <- reactive({ autoPaths$spiro })
   srovnani_path <- reactive({ autoPaths$srovnani })
   srovnani2_path <- reactive({ autoPaths$srovnani2 })
-
+  
   # Output main path and detected subfolders
   output$main_folder_path <- renderPrint({
     selected_path <- parseDirPath(volumes, input$main_folder)
@@ -146,7 +146,7 @@ and optionally 'wingate/srovnani', 'wingate/srovnani2'.")
     cat("Comparison: ", ifelse(is.null(autoPaths$srovnani), "Not found", autoPaths$srovnani), "\n")
     cat("Comparison 2: ", ifelse(is.null(autoPaths$srovnani2), "Not found", autoPaths$srovnani2), "\n")
   })
-    
+  
   
   file.lists <- reactive({
     refreshFiles
@@ -641,7 +641,7 @@ and optionally 'wingate/srovnani', 'wingate/srovnani2'.")
     }
   }
   
-
+  
   
   observeEvent(input$check, {
     refreshFiles <<- refreshFiles + 1
@@ -1188,7 +1188,7 @@ and optionally 'wingate/srovnani', 'wingate/srovnani2'.")
           if (length(file.list.spiro) != 0) {
             # spiro <- readxl::read_excel("C:/Users/Dominik Kolinger/Desktop/Somatyka/spiro/Griffin_Mendel.xlsx")  
             spiro <- readxl::read_excel(paste(spiro.path, "/", file.list.spiro[k], sep=""))
-           
+            
             spiro <- spiro[rowSums(!is.na(spiro)) > 0,]
             rows_with_bf <- which(spiro[[1]] == "BF")
             spiro_info <- spiro[1:rows_with_bf, ]
@@ -2671,9 +2671,9 @@ and optionally 'wingate/srovnani', 'wingate/srovnani2'.")
         # Save table3 as HTML, then convert to PNG
         table3 %>%
           gtsave(paste0(program_slozka, "/t3.png"), vwidth = 1700, vheight = 1000) 
-      
-      
-  
+        
+        
+        
         Sys.setenv(RSTUDIO_PANDOC = "C:/Program Files/RStudio/resources/app/bin/quarto/bin/tools")
         rmarkdown::render(paste(program_slozka, "/export_spiro_NEOTVIRAT.Rmd", sep = ""), output_file = paste(id, ".pdf", sep= ""), clean = T, quiet = F)
         
